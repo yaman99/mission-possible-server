@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MongoDB.Driver" Version="2.13.2" />
+	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MissionPossible.Application\MissionPossible.Application.csproj" />
+    <ProjectReference Include="..\MissionPossible.Shared\MissionPossible.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
