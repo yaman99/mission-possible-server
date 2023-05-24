@@ -12,11 +12,8 @@ namespace MissionPossible.Application.Features.Identity.Dtos
     public class GetUserDto : IMapFrom<User>
     {
         public string Email { get; private set; }
-        public string FirstName { get; private set; }
-        public string LastName { get; private set; }
-        public string? Phone { get; private set; }
+        public string FullName { get; private set; }
         public string UserType { get; set; }
-        public List<string> Punishments { get; set; }
     }
     
 }

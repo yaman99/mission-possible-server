@@ -6,6 +6,8 @@ using MissionPossible.Application.Features.Identity.Validators;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using MissionPossible.Shared.Services;
+using MissionPossible.Shared.Types;
 
 namespace MissionPossible.API
 {
@@ -21,6 +23,8 @@ namespace MissionPossible.API
             services.AddHttpContextAccessor();
 
             services.AddTransient<ICurrentUserService, CurrentUserService>();
+            services.AddTransient<IEmailSenderService, EmailSenderService>();
+            services.Configure<SmtpConfig>(configuration.GetSection("SmtpConfig"));
 
             // Customise default API behaviour
             services.Configure<ApiBehaviorOptions>(options =>

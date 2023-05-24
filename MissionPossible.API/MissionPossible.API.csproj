@@ -13,7 +13,8 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
 	<PackageReference Include="FluentValidation" Version="11.1.0" />
-	  <PackageReference Include="Autofac" Version="6.4.0" />
+	<PackageReference Include="Autofac" Version="6.4.0" />
+	<PackageReference Include="MailKit" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

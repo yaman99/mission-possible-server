@@ -33,17 +33,7 @@ namespace MissionPossible.API.Controllers
         public async Task<IActionResult> UserSignIn(UserSignInCommand command)
             => Ok(await Bus.ExecuteAsync<UserSignInCommand, JsonWebToken>(command));
 
-        [HttpPost("sign-up")]
-        public async Task<IActionResult> UserSignUp(UserSignUpCommand command)
-        {
-            var result = await _userSignUpValidator.ValidateAsync(command);
-            if (!result.IsValid)
-            {
-                throw new SystemValidationException(result.Errors);
-            }
-            // command
-            return Ok();
-        }
+        
 
         [HttpPost("sign-out")]
         public async Task<IActionResult> UserSignOut()

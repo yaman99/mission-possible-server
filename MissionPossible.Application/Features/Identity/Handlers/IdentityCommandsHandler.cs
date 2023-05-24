@@ -23,14 +23,8 @@ namespace MissionPossible.Features.Identity.Handlers
         IRequestHandler<UserSignOutCommand, Result>,
         IRequestHandler<RefreshAccessTokenCommand, Result>,
         IRequestHandler<ChangePasswordCommand, Result>,
-        IRequestHandler<UserSignUpCommand, UserSignUpDto>,
-        IRequestHandler<ActivateAccountCommand, Result>,
-        IRequestHandler<UpdateEmailCommand, Result>,
-        IRequestHandler<UpdatePhoneCommand, Result>,
-        IRequestHandler<VerifyUpdatedEmailCommand, Result>,
-        IRequestHandler<CreateQuickAdvertiserAccountCommand, CreateQuickAdvertiserAccountDto>,
-        IRequestHandler<SetQuickAccountPasswordCommand, Result>,
-        IRequestHandler<ResendEmailCommand, Result>
+        IRequestHandler<ActivateAccountCommand, Result>
+
 
     {
         private readonly IUserRepository _userRepository;
@@ -154,33 +148,6 @@ namespace MissionPossible.Features.Identity.Handlers
             return Result.Success();
         }
 
-        public async Task<UserSignUpDto> Handle(UserSignUpCommand request, CancellationToken cancellationToken)
-        {
-            var user = new User(Guid.NewGuid(), request.Email, request.UserType);
-            user.GenerateActivationCode();
-            user.SetPassword(request.Password, _passwordHasher);
-
-
-            //if (request.UserType == UserTypes.Advertiser)
-            //{
-            //    await _bus.RaiseEvent(new AdvertiserAccountCreated(user.Id, request.FirstName, request.LastName));
-            //}
-            //else if (request.UserType == UserTypes.Promoter)
-            //{
-            //    await _bus.RaiseEvent(new PromoterAccountCreated(user.Id, request.FirstName, request.LastName));
-            //}
-
-            await _userRepository.AddAsync(user);
-            //await _bus.RaiseEvent(new NewAccountCreated(user.Email, user.ActivationCode));
-            var dto = new UserSignUpDto
-            {
-                AcitivationCode = user.ActivationCode,
-                OwnerId = user.Id
-            };
-            return dto;
-
-        }
-
         public async Task<Result> Handle(ActivateAccountCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetUserByActivation(request.ActivationCode);
@@ -195,105 +162,6 @@ namespace MissionPossible.Features.Identity.Handlers
 
         }
 
-        public async Task<Result> Handle(UpdateEmailCommand request, CancellationToken cancellationToken)
-        {
-            var userId = _currentUserService.UserId!;
-            var user = await _userRepository.GetAsync(Guid.Parse(userId));
-            var isValidated = user.ValidatePassword(request.Password, _passwordHasher);
-            if (!isValidated)
-                throw new IdentityException(Codes.InvalidPassword);
 
-            user.SetSecondaryEmail(request.Email);
-
-            await _bus.RaiseEvent(new EmailUpdated
-            {
-                Email = request.Email,
-                ActivationCode = user.ActivationCode
-            });
-
-            await _userRepository.UpdateAsync(user);
-            return Result.Success();
-        }
-
-        public async Task<Result> Handle(UpdatePhoneCommand request, CancellationToken cancellationToken)
-        {
-            var userId = _currentUserService.UserId!;
-            var user = await _userRepository.GetAsync(Guid.Parse(userId));
-
-            if (user == null)
-                throw new IdentityException(Codes.InvalidCredentials);
-
-            user.SetPhone(request.Phone);
-
-            await _userRepository.UpdateAsync(user);
-            return Result.Success();
-        }
-
-        public async Task<Result> Handle(VerifyUpdatedEmailCommand request, CancellationToken cancellationToken)
-        {
-            var user = await _userRepository.GetUserByActivation(request.ActivationCode);
-            var oldEmail = user.Email;
-            user.SetEmail(user.SecondaryEmail);
-            user.SetSecondaryEmail(oldEmail);
-
-            await _userRepository.UpdateAsync(user);
-
-            return Result.Success();
-        }
-
-        
-
-        public async Task<CreateQuickAdvertiserAccountDto> Handle(CreateQuickAdvertiserAccountCommand request, CancellationToken cancellationToken)
-        {
-            var user = new User(Guid.NewGuid(), request.Email, UserTypes.Advertiser);
-            user.GenerateRandomCode();
-            user.SetPassword(Guid.NewGuid().ToString(), _passwordHasher);
-            await _userRepository.AddAsync(user);
-            return new CreateQuickAdvertiserAccountDto
-            {
-                Code = user.ActivationCode,
-                OwnerId = user.Id
-            };
-        }
-
-        public async Task<Result> Handle(SetQuickAccountPasswordCommand request, CancellationToken cancellationToken)
-        {
-            var user = await _userRepository.GetUserByActivation(request.VerificationCode);
-            if (user == null)
-            {
-                throw new IdentityException(Codes.UserNotFound);
-            }
-            else if (user.IsActive)
-            {
-                throw new IdentityException(Codes.AlreadyActivated);
-            }
-
-            user.SetPassword(request.Password, _passwordHasher);
-            user.ActivateAccount();
-            await _userRepository.UpdateAsync(user);
-
-            return Result.Success();
-        }
-
-        public async Task<Result> Handle(ResendEmailCommand request, CancellationToken cancellationToken)
-        {
-            var user = await _userRepository.GetAsync(request.Email);
-            if (user == null)
-            {
-                throw new IdentityException(Codes.UserNotFound);
-            }
-            else if (user.IsActive)
-            {
-                throw new IdentityException(Codes.AlreadyActivated);
-            }
-
-            await _bus.RaiseEvent(new ResendEmailRequested
-            {
-                ActivationCode = user.ActivationCode,
-                Email = user.Email
-            });
-
-            return Result.Success();
-        }
     }
 }
