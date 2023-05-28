@@ -7,7 +7,7 @@ namespace MissionPossible.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class AdminController : AuthController
+    public class AdminController : MissionPossibleController
     {
         [HttpPost("assign-new-user")]
         public async Task<IActionResult> UserSignUp(AssignNewUserCommand command)

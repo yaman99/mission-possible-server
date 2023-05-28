@@ -8,6 +8,7 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using MissionPossible.Domain.Entitis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 
         cb.AddMongo();
         cb.AddMongoRepository<User, Guid>("Users");
+        cb.AddMongoRepository<ApplicationFormRequest, Guid>("ApplicationFormRequests");
         cb.RegisterType<PasswordHasher<User>>().As<IPasswordHasher<User>>();
     });
 

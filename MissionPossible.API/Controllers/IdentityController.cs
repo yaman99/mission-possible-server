@@ -16,7 +16,7 @@ namespace MissionPossible.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class IdentityController : AuthController
+    public class IdentityController : MissionPossibleController
     {
         private readonly IValidator<UserSignUpCommand> _userSignUpValidator;
         private readonly IValidator<UpdateEmailCommand> _updateEmailValidator;

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using MissionPossible.Shared.Services;
 using MissionPossible.Shared.Types;
+using MissionPossible.Application.Common.Interfaces.Services;
 
 namespace MissionPossible.API
 {
@@ -24,6 +25,7 @@ namespace MissionPossible.API
 
             services.AddTransient<ICurrentUserService, CurrentUserService>();
             services.AddTransient<IEmailSenderService, EmailSenderService>();
+            services.AddSingleton<IFileUploadService, FileUploadService>();
             services.Configure<SmtpConfig>(configuration.GetSection("SmtpConfig"));
 
             // Customise default API behaviour

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MissionPossible.API.Controllers
 {
     [ApiController]
-    public class AuthController : ControllerBase
+    public class MissionPossibleController : ControllerBase
     {
         private IDomainBus _bus;
         protected IDomainBus Bus => _bus ??= HttpContext.RequestServices.GetService(typeof(IDomainBus)) as IDomainBus;
