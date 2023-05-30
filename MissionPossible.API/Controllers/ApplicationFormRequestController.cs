@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MissionPossible.Application.Common.Interfaces;
 using MissionPossible.Application.Common.Models;
 using MissionPossible.Application.Features.RequestManagement.Commands;
 using MissionPossible.Application.Features.RequestManagement.Queries;
@@ -9,27 +10,59 @@ namespace MissionPossible.API.Controllers
     [ApiController]
     public class ApplicationFormRequestController : MissionPossibleController
     {
+        private readonly ICurrentUserService _currentUserService;
+
+        public ApplicationFormRequestController(ICurrentUserService currentUserService)
+        {
+            _currentUserService = currentUserService;
+        }
+
         [HttpPost("addRequest")]
         public async Task<IActionResult> AddRequest([FromForm] AddApplicationFormRequestCommand command)
         {
             return Ok(await Bus.ExecuteAsync<AddApplicationFormRequestCommand, Result>(command));
         }
 
-        [HttpPost("update-request")]
-        public async Task<IActionResult> UpdateRequest( UpdateApplicationFormRequestStatusCommand command)
+        [HttpPost("addOfficialRequest")]
+        public async Task<IActionResult> AddOfficialRequest([FromForm] AddOfficialLetterRequestCommand command)
         {
-            return Ok(await Bus.ExecuteAsync<UpdateApplicationFormRequestStatusCommand, Result>(command));
+            return Ok(await Bus.ExecuteAsync<AddOfficialLetterRequestCommand, Result>(command));
+        }
+        [HttpPost("upload-official-letter")]
+        public async Task<IActionResult> UploadOfficialLetter([FromForm] UploadOfficialLetterCommand command)
+        {
+            return Ok(await Bus.ExecuteAsync<UploadOfficialLetterCommand, Result>(command));
         }
 
-        [HttpGet("get-requests")]
-        public async Task<IActionResult> GetRequests()
+        [HttpPost("update-request")]
+        public async Task<IActionResult> UpdateRequest(UpdateRequestStatusCommand command)
         {
-            return Ok(await Bus.ExecuteAsync<GetAllApplicationFormRequestQuery, Result>(new GetAllApplicationFormRequestQuery()));
+            return Ok(await Bus.ExecuteAsync<UpdateRequestStatusCommand, Result>(command));
         }
-        [HttpGet("get-student-requests/{studentId}")]
-        public async Task<IActionResult> GetStudentRequests(Guid studentId)
+        [HttpPost("delete-request")]
+        public async Task<IActionResult> DeleteRequest(DeleteStudentApplicationFormRequestCommand command)
         {
-            return Ok(await Bus.ExecuteAsync<GetAllStudentApplicationFormRequestQuery, Result>(new GetAllStudentApplicationFormRequestQuery { StudentId = studentId}));
+            return Ok(await Bus.ExecuteAsync<DeleteStudentApplicationFormRequestCommand, Result>(command));
+        }
+
+        [HttpGet("get-requests/{requestType}")]
+        public async Task<IActionResult> GetRequests(string requestType)
+        {
+            return Ok(await Bus.ExecuteAsync<GetAllApplicationFormRequestQuery, Result>(new GetAllApplicationFormRequestQuery()
+            {
+                RequestType = requestType
+            }));
+        }
+
+        [HttpGet("get-student-requests/{requestType}")]
+        public async Task<IActionResult> GetStudentRequests(string requestType)
+        {
+            return Ok(await Bus.ExecuteAsync<GetAllStudentApplicationFormRequestQuery, Result>(
+                new GetAllStudentApplicationFormRequestQuery
+                {
+                    StudentId = Guid.Parse(_currentUserService.UserId),
+                    RequestType = requestType
+                }));
         }
     }
 }

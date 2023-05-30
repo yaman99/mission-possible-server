@@ -11,28 +11,28 @@ namespace MissionPossible.Infrastructure.Repositories
 {
     public class ApplicationFormRepository : IApplicationFormRepository
     {
-        private readonly IMongoRepository<ApplicationFormRequest, Guid> _repository;
+        private readonly IMongoRepository<StudentRequest, Guid> _repository;
 
-        public ApplicationFormRepository(IMongoRepository<ApplicationFormRequest, Guid> repository)
+        public ApplicationFormRepository(IMongoRepository<StudentRequest, Guid> repository)
         {
             _repository = repository;
         }
 
-        public async Task AddAsync(ApplicationFormRequest request)
+        public async Task AddAsync(StudentRequest request)
             => await _repository.AddAsync(request);
 
-        public async Task<IEnumerable<ApplicationFormRequest>> GetAllAsync()
-            => await _repository.FindAsync(x => !x.IsDeleted);
-        public async Task<IEnumerable<ApplicationFormRequest>> GetAllByStudentAsync(Guid studentId)
-            => await _repository.FindAsync(x => x.StudentId == studentId && !x.IsDeleted);
+        public async Task<IEnumerable<StudentRequest>> GetAllAsync(string requestType)
+            => await _repository.FindAsync(x => x.RequestType == requestType && !x.IsDeleted);
+        public async Task<IEnumerable<StudentRequest>> GetAllByStudentAsync(Guid studentId , string requestType)
+            => await _repository.FindAsync(x => x.StudentId == studentId && x.RequestType == requestType && !x.IsDeleted);
 
-        public async Task<ApplicationFormRequest> GetAsync(Guid id)
+        public async Task<StudentRequest> GetAsync(Guid id)
             => await _repository.GetAsync(x => x.Id == id && !x.IsDeleted);
 
-        public async Task<ApplicationFormRequest> GetByStudentAsync(Guid id)
+        public async Task<StudentRequest> GetByStudentAsync(Guid id)
             => await _repository.GetAsync(x => x.StudentId == id && !x.IsDeleted);
 
-        public async Task UpdateAsync(ApplicationFormRequest request)
+        public async Task UpdateAsync(StudentRequest request)
             => await _repository.UpdateAsync(request);
     }
 }

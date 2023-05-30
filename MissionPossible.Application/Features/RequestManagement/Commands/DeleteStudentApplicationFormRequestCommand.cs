@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
 using MissionPossible.Application.Common.Models;
 using System;
 using System.Collections.Generic;
@@ -9,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace MissionPossible.Application.Features.RequestManagement.Commands
 {
-    public class UpdateRequestStatusCommand : IRequest<Result>
+    public class DeleteStudentApplicationFormRequestCommand : IRequest<Result>
     {
         public Guid Id { get; set; }
-        public string Status { get; set; }
     }
 }

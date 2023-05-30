@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace MissionPossible.Application.Features.RequestManagement.Commands
 {
-    public class UpdateRequestStatusCommand : IRequest<Result>
+    public class UploadOfficialLetterCommand : IRequest<Result>
     {
         public Guid Id { get; set; }
-        public string Status { get; set; }
+        public IFormFile OfficialLetter { get; set; }
     }
 }

@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace MissionPossible.Application.Features.RequestManagement.Dtos
 {
-    public class GetApplicationFormRequestDto : IMapFrom<StudentRequest>
+    public class GetOfficialLetterRequestDto : IMapFrom<StudentRequest>
     {
         public Guid Id { get; set; }
         public Guid StudentId { get; set; }
         public string TranscriptUrl { get; set; }
-        public string ApplicationFormUrl { get; set; }
-        public string SgkUrl { get; set; }
+        public string OfficialLetterUrl { get; set; }
+        public string CompanyName { get; set; }
         public string Status { get; set; }
-        public string RejectMessage { get; set; }
+        public string InternshipType { get; set; }
     }
 }

@@ -27,17 +27,36 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
 
         public async Task<Result> Handle(GetAllApplicationFormRequestQuery request, CancellationToken cancellationToken)
         {
-            var requests = await _applicationFormRepository.GetAllAsync();
-            var dto = _mapper.Map<IEnumerable<GetApplicationFormRequestDto>>(requests);
+            var requests = await _applicationFormRepository.GetAllAsync(request.RequestType);
+            if(request.RequestType == "official")
+            {
+                var dto = _mapper.Map<IEnumerable<GetOfficialLetterRequestDto>>(requests);
+                return Result.Success(dto);
+            }
+            else if(request.RequestType == "application")
+            {
+                var dto = _mapper.Map<IEnumerable<GetApplicationFormRequestDto>>(requests);
+                return Result.Success(dto);
+            }
 
-            return Result.Success(dto);
+            return Result.Success();
         }
 
         public async Task<Result> Handle(GetAllStudentApplicationFormRequestQuery request, CancellationToken cancellationToken)
         {
-            var requests = await _applicationFormRepository.GetAllByStudentAsync(request.StudentId);
-            var dto = _mapper.Map<IEnumerable<GetApplicationFormRequestDto>>(requests);
-            return Result.Success(dto);
+            var requests = await _applicationFormRepository.GetAllByStudentAsync(request.StudentId , request.RequestType);
+
+            if (request.RequestType == "official")
+            {
+                var dto = _mapper.Map<IEnumerable<GetOfficialLetterRequestDto>>(requests);
+                return Result.Success(dto);
+            }
+            else if (request.RequestType == "application")
+            {
+                var dto = _mapper.Map<IEnumerable<GetApplicationFormRequestDto>>(requests);
+                return Result.Success(dto);
+            }
+            return Result.Success();
         }
     }
 }

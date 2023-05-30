@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MissionPossible.Application.Common.Exceptions;
 using MissionPossible.Application.Common.Interfaces;
 using MissionPossible.Application.Common.Interfaces.Repositories;
 using MissionPossible.Application.Common.Interfaces.Services;
@@ -15,7 +16,10 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
 {
     public class RequestManagementCommandHandlers : 
         IRequestHandler<AddApplicationFormRequestCommand, Result>,
-        IRequestHandler<UpdateApplicationFormRequestStatusCommand, Result>
+        IRequestHandler<UpdateRequestStatusCommand, Result>,
+        IRequestHandler<DeleteStudentApplicationFormRequestCommand, Result>,
+        IRequestHandler<AddOfficialLetterRequestCommand, Result>,
+        IRequestHandler<UploadOfficialLetterCommand, Result>
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IApplicationFormRepository _applicationFormRepository;
@@ -33,22 +37,65 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
             var student = Guid.Parse(_currentUserService.UserId!);
             var transcriptPath = await _fileUploadService.CreateFileAsync(request.Transcript);
             var applicationFormPath = await _fileUploadService.CreateFileAsync(request.ApplicationForm);
-            var requestform = new ApplicationFormRequest(Guid.NewGuid())
+            var requestform = new StudentRequest(Guid.NewGuid())
             {
                 TranscriptUrl = transcriptPath,
                 ApplicationFormUrl = applicationFormPath,
                 StudentId = student,
-                Status = "pending"
+                Status = "pending",
+                RequestType = "application",
+                InternshipType = request.InternshipType,
             };
             await _applicationFormRepository.AddAsync(requestform);
             return Result.Success();
         }
 
-        public async Task<Result> Handle(UpdateApplicationFormRequestStatusCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UpdateRequestStatusCommand request, CancellationToken cancellationToken)
         {
             var appRequest = await _applicationFormRepository.GetAsync(request.Id);
             appRequest.Status = request.Status;
+            if(appRequest.RequestType == "official" && request.Status == "rejected")
+            {
+                appRequest.OfficialLetterUrl = string.Empty;
+            }
             await _applicationFormRepository.UpdateAsync(appRequest);
+            return Result.Success();
+        }
+
+        public async Task<Result> Handle(DeleteStudentApplicationFormRequestCommand request, CancellationToken cancellationToken)
+        {
+            var appRequest = await _applicationFormRepository.GetAsync(request.Id);
+            if (appRequest == null)
+                throw new NotFoundException();
+            appRequest.SetDelete(true);
+            await _applicationFormRepository.UpdateAsync(appRequest);
+            return Result.Success();
+        }
+
+        public async Task<Result> Handle(AddOfficialLetterRequestCommand request, CancellationToken cancellationToken)
+        {
+            var student = Guid.Parse(_currentUserService.UserId!);
+            var transcriptPath = await _fileUploadService.CreateFileAsync(request.Transcript);
+            var requestform = new StudentRequest(Guid.NewGuid())
+            {
+                TranscriptUrl = transcriptPath,
+                StudentId = student,
+                Status = "pending",
+                RequestType = "official",
+                InternshipType = request.InternshipType,
+                CompanyName = request.CompanyName
+            };
+            await _applicationFormRepository.AddAsync(requestform);
+            return Result.Success();
+        }
+
+        public async Task<Result> Handle(UploadOfficialLetterCommand request, CancellationToken cancellationToken)
+        {
+            var studentRequest = await _applicationFormRepository.GetAsync(request.Id);
+            var officialLetterPath = await _fileUploadService.CreateFileAsync(request.OfficialLetter);
+            studentRequest.OfficialLetterUrl = officialLetterPath;
+            studentRequest.Status = "approved";
+            await _applicationFormRepository.UpdateAsync(studentRequest);
             return Result.Success();
         }
     }

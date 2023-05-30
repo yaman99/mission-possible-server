@@ -10,5 +10,6 @@ namespace MissionPossible.Application.Features.RequestManagement.Queries
 {
     public class GetAllApplicationFormRequestQuery : IRequest<Result>
     {
+        public string RequestType { get; set; }
     }
 }
