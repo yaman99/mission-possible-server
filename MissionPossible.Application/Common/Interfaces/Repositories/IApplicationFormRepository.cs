@@ -14,6 +14,7 @@ namespace MissionPossible.Application.Common.Interfaces.Repositories
         Task AddAsync(StudentRequest request);
         Task UpdateAsync(StudentRequest request);
         Task<IEnumerable<StudentRequest>> GetAllAsync(string requestType);
+        Task<IEnumerable<StudentRequest>> GetAllAsync(string requestType , string status);
         Task<IEnumerable<StudentRequest>> GetAllByStudentAsync(Guid studentId , string requestType);
     }
 }

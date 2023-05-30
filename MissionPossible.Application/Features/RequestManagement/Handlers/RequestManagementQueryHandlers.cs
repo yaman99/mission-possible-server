@@ -4,6 +4,7 @@ using MissionPossible.Application.Common.Interfaces.Repositories;
 using MissionPossible.Application.Common.Models;
 using MissionPossible.Application.Features.RequestManagement.Dtos;
 using MissionPossible.Application.Features.RequestManagement.Queries;
+using MissionPossible.Domain.Entitis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 namespace MissionPossible.Application.Features.RequestManagement.Handlers
 {
     public class RequestManagementQueryHandlers : 
-        IRequestHandler<GetAllApplicationFormRequestQuery, Result>,
+        IRequestHandler<GetAllRequestsQuery, Result>,
         IRequestHandler<GetAllStudentApplicationFormRequestQuery, Result>
     {
         private readonly IApplicationFormRepository _applicationFormRepository;
@@ -25,9 +26,17 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
             _mapper = mapper;
         }
 
-        public async Task<Result> Handle(GetAllApplicationFormRequestQuery request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(GetAllRequestsQuery request, CancellationToken cancellationToken)
         {
-            var requests = await _applicationFormRepository.GetAllAsync(request.RequestType);
+            IEnumerable<StudentRequest> requests = new List<StudentRequest>();
+            if(request.Status != null && request.Status != "any")
+            {
+                requests =  await _applicationFormRepository.GetAllAsync(request.RequestType , request.Status);
+            }
+            else
+            {
+                requests = await _applicationFormRepository.GetAllAsync(request.RequestType);
+            }
             if(request.RequestType == "official")
             {
                 var dto = _mapper.Map<IEnumerable<GetOfficialLetterRequestDto>>(requests);

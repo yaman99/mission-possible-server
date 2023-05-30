@@ -29,9 +29,9 @@ namespace MissionPossible.API.Controllers
             return Ok(await Bus.ExecuteAsync<AddOfficialLetterRequestCommand, Result>(command));
         }
         [HttpPost("upload-official-letter")]
-        public async Task<IActionResult> UploadOfficialLetter([FromForm] UploadOfficialLetterCommand command)
+        public async Task<IActionResult> UploadOfficialLetter([FromForm] UploadFileToRequestCommand command)
         {
-            return Ok(await Bus.ExecuteAsync<UploadOfficialLetterCommand, Result>(command));
+            return Ok(await Bus.ExecuteAsync<UploadFileToRequestCommand, Result>(command));
         }
 
         [HttpPost("update-request")]
@@ -45,12 +45,13 @@ namespace MissionPossible.API.Controllers
             return Ok(await Bus.ExecuteAsync<DeleteStudentApplicationFormRequestCommand, Result>(command));
         }
 
-        [HttpGet("get-requests/{requestType}")]
-        public async Task<IActionResult> GetRequests(string requestType)
+        [HttpGet("get-requests/{requestType}/{status}")]
+        public async Task<IActionResult> GetRequests(string requestType,string status)
         {
-            return Ok(await Bus.ExecuteAsync<GetAllApplicationFormRequestQuery, Result>(new GetAllApplicationFormRequestQuery()
+            return Ok(await Bus.ExecuteAsync<GetAllRequestsQuery, Result>(new GetAllRequestsQuery()
             {
-                RequestType = requestType
+                RequestType = requestType,
+                Status = status
             }));
         }
 

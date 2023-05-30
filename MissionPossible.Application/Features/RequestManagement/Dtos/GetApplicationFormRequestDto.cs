@@ -17,5 +17,6 @@ namespace MissionPossible.Application.Features.RequestManagement.Dtos
         public string SgkUrl { get; set; }
         public string Status { get; set; }
         public string RejectMessage { get; set; }
+        public string InternshipType { get; set; }
     }
 }

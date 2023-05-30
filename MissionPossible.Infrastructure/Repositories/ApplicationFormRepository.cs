@@ -23,6 +23,8 @@ namespace MissionPossible.Infrastructure.Repositories
 
         public async Task<IEnumerable<StudentRequest>> GetAllAsync(string requestType)
             => await _repository.FindAsync(x => x.RequestType == requestType && !x.IsDeleted);
+        public async Task<IEnumerable<StudentRequest>> GetAllAsync(string requestType, string status)
+            => await _repository.FindAsync(x => x.RequestType == requestType && x.Status == status && !x.IsDeleted);
         public async Task<IEnumerable<StudentRequest>> GetAllByStudentAsync(Guid studentId , string requestType)
             => await _repository.FindAsync(x => x.StudentId == studentId && x.RequestType == requestType && !x.IsDeleted);
 

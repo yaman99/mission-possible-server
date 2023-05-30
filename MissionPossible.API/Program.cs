@@ -35,6 +35,7 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
         cb.AddMongo();
         cb.AddMongoRepository<User, Guid>("Users");
         cb.AddMongoRepository<StudentRequest, Guid>("Requests");
+        cb.AddMongoRepository<Announcement, Guid>("Announcements");
         cb.RegisterType<PasswordHasher<User>>().As<IPasswordHasher<User>>();
     });
 

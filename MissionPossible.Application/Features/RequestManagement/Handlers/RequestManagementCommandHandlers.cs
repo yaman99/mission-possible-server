@@ -19,7 +19,7 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
         IRequestHandler<UpdateRequestStatusCommand, Result>,
         IRequestHandler<DeleteStudentApplicationFormRequestCommand, Result>,
         IRequestHandler<AddOfficialLetterRequestCommand, Result>,
-        IRequestHandler<UploadOfficialLetterCommand, Result>
+        IRequestHandler<UploadFileToRequestCommand, Result>
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IApplicationFormRepository _applicationFormRepository;
@@ -89,12 +89,21 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
             return Result.Success();
         }
 
-        public async Task<Result> Handle(UploadOfficialLetterCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UploadFileToRequestCommand request, CancellationToken cancellationToken)
         {
             var studentRequest = await _applicationFormRepository.GetAsync(request.Id);
-            var officialLetterPath = await _fileUploadService.CreateFileAsync(request.OfficialLetter);
-            studentRequest.OfficialLetterUrl = officialLetterPath;
-            studentRequest.Status = "approved";
+            var filPath = await _fileUploadService.CreateFileAsync(request.File);
+            if(request.Type == "official")
+            {
+                studentRequest.OfficialLetterUrl = filPath;
+                studentRequest.Status = "approved";
+            }
+            else if(request.Type == "sgk")
+            {
+                studentRequest.SgkUrl = filPath;
+                studentRequest.Status = "completed";
+
+            }
             await _applicationFormRepository.UpdateAsync(studentRequest);
             return Result.Success();
         }

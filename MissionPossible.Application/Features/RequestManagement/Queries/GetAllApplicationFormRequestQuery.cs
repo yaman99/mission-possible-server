@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace MissionPossible.Application.Features.RequestManagement.Queries
 {
-    public class GetAllApplicationFormRequestQuery : IRequest<Result>
+    public class GetAllRequestsQuery : IRequest<Result>
     {
         public string RequestType { get; set; }
+        public string Status { get; set; }
     }
 }
