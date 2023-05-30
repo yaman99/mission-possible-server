@@ -14,7 +14,9 @@ using System.Threading.Tasks;
 
 namespace MissionPossible.Application.Features.Admin.Handlers
 {
-    public class AdminCommandHandlers : IRequestHandler<AssignNewUserCommand, Result>
+    public class AdminCommandHandlers : 
+        IRequestHandler<AssignNewUserCommand, Result>,
+        IRequestHandler<DeleteUserCommand, Result>
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
@@ -38,6 +40,14 @@ namespace MissionPossible.Application.Features.Admin.Handlers
                 Email = user.Email,
                 Password = tempPassword
             });
+            return Result.Success();
+        }
+
+        public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+        {
+            var user = await _userRepository.GetAsync(request.UserId);
+            user.SetDelete(true);
+            await _userRepository.UpdateAsync(user);
             return Result.Success();
         }
     }

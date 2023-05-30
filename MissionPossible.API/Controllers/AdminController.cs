@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using MissionPossible.Application.Common.Exceptions;
 using MissionPossible.Application.Common.Models;
 using MissionPossible.Application.Features.Admin.Commands;
 using MissionPossible.Application.Features.Admin.Queries;
+using MissionPossible.Application.Features.Admin.Validators;
 
 namespace MissionPossible.API.Controllers
 {
@@ -9,19 +12,29 @@ namespace MissionPossible.API.Controllers
     [ApiController]
     public class AdminController : MissionPossibleController
     {
+        private readonly IValidator<AssignNewUserCommand> _addNewUserValidator;
+
+        public AdminController(IValidator<AssignNewUserCommand> addNewUserValidator)
+        {
+            _addNewUserValidator = addNewUserValidator;
+        }
+
         [HttpPost("assign-new-user")]
         public async Task<IActionResult> UserSignUp(AssignNewUserCommand command)
         {
-            //var result = await _userSignUpValidator.ValidateAsync(command);
-            //if (!result.IsValid)
-            //{
-            //    throw new SystemValidationException(result.Errors);
-            //}
-
-            // command
+            var validationResult = await _addNewUserValidator.ValidateAsync(command);
+            if (!validationResult.IsValid)
+            {
+                throw new SystemValidationException(validationResult.Errors);
+            }
 
             var result = await Bus.ExecuteAsync<AssignNewUserCommand, Result>(command);
             return Ok(result);
+        }
+        [HttpPost("delete-user")]
+        public async Task<IActionResult> DeleteUser(DeleteUserCommand command)
+        {
+            return Ok(await Bus.ExecuteAsync<DeleteUserCommand, Result>(command));
         }
 
         [HttpGet("get-assigned-users")]
