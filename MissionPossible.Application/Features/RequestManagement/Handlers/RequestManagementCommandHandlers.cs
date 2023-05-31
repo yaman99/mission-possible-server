@@ -4,6 +4,8 @@ using MissionPossible.Application.Common.Interfaces;
 using MissionPossible.Application.Common.Interfaces.Repositories;
 using MissionPossible.Application.Common.Interfaces.Services;
 using MissionPossible.Application.Common.Models;
+using MissionPossible.Application.EventBus.Bus;
+using MissionPossible.Application.Features.Notification.Commands;
 using MissionPossible.Application.Features.RequestManagement.Commands;
 using MissionPossible.Domain.Entitis;
 using System;
@@ -24,12 +26,14 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
         private readonly IFileUploadService _fileUploadService;
         private readonly IApplicationFormRepository _applicationFormRepository;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IDomainBus _domainBus;
 
-        public RequestManagementCommandHandlers(IFileUploadService fileUploadService, IApplicationFormRepository applicationFormRepository, ICurrentUserService currentUserService)
+        public RequestManagementCommandHandlers(IFileUploadService fileUploadService, IApplicationFormRepository applicationFormRepository, ICurrentUserService currentUserService, IDomainBus domainBus)
         {
             _fileUploadService = fileUploadService;
             _applicationFormRepository = applicationFormRepository;
             _currentUserService = currentUserService;
+            _domainBus = domainBus;
         }
 
         public async Task<Result> Handle(AddApplicationFormRequestCommand request, CancellationToken cancellationToken)
@@ -47,6 +51,11 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
                 InternshipType = request.InternshipType,
             };
             await _applicationFormRepository.AddAsync(requestform);
+            await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+            {
+                Type = "coordinator",
+                Message = "New Internship Application Request Sent By Student",
+            });
             return Result.Success();
         }
 
@@ -59,6 +68,35 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
                 appRequest.OfficialLetterUrl = string.Empty;
             }
             await _applicationFormRepository.UpdateAsync(appRequest);
+            if (appRequest.RequestType == "official" )
+            {
+                await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+                {
+                    Type = "student",
+                    Message = $"Your Official Letter Request Status Changed to: {request.Status}",
+                    UserId = appRequest.StudentId
+                });
+            }
+            else
+            {
+                await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+                {
+                    Type = "student",
+                    Message = $"Your Internship Application Request Status Changed to: {request.Status}",
+                    UserId = appRequest.StudentId
+                });
+                if (request.Status == "approved")
+                {
+                    await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+                    {
+                        Type = "carrerCenter",
+                        Message = $"New Sgk Requested",
+                        UserId = appRequest.StudentId
+                    });
+                }
+                
+            }
+            
             return Result.Success();
         }
 
@@ -86,6 +124,11 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
                 CompanyName = request.CompanyName
             };
             await _applicationFormRepository.AddAsync(requestform);
+            await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+            {
+                Type = "coordinator",
+                Message = "New Official Letter Request Sent By Student",
+            });
             return Result.Success();
         }
 
@@ -97,11 +140,23 @@ namespace MissionPossible.Application.Features.RequestManagement.Handlers
             {
                 studentRequest.OfficialLetterUrl = filPath;
                 studentRequest.Status = "approved";
+                await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+                {
+                    Type = "student",
+                    Message = "Your Official Letter Uploaded",
+                    UserId = studentRequest.StudentId
+                });
             }
             else if(request.Type == "sgk")
             {
                 studentRequest.SgkUrl = filPath;
                 studentRequest.Status = "completed";
+                await _domainBus.ExecuteAsync<AddNotificationCommand, Result>(new AddNotificationCommand
+                {
+                    Type = "student",
+                    Message = "Your Sgk Uploaded",
+                    UserId = studentRequest.StudentId
+                });
 
             }
             await _applicationFormRepository.UpdateAsync(studentRequest);
